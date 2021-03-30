@@ -18,11 +18,15 @@ using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Net.Http.Headers;
 
 namespace store_api
 {
     public class Startup
     {
+        readonly string allowSpecificOrigins = "_allowSpecificOrigins";
+
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -36,11 +40,16 @@ namespace store_api
             services.AddDbContext<StoreDbContext>(option => option.UseSqlServer(Configuration.GetConnectionString("StoreConnection")));
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"));
-            services.AddCors(c =>
+            services.AddCors(options =>
             {
-                c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin());
-            });
-            services.AddControllers().AddNewtonsoftJson(s => {
+                options.AddPolicy(allowSpecificOrigins,
+                                  builder =>
+                                  {
+                                      builder.WithOrigins("http://localhost:3000")
+                                                          .WithMethods("GET","POST","DELETE","PUT")
+                                                          .WithHeaders(HeaderNames.ContentType);
+                                  });
+            }); services.AddControllers().AddNewtonsoftJson(s => {
                 s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
 
@@ -57,9 +66,8 @@ namespace store_api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseCors(options => options.AllowAnyOrigin());
             if (env.IsDevelopment())
-            {
+            { 
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "store_api v1"));
@@ -68,6 +76,8 @@ namespace store_api
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseCors(allowSpecificOrigins);
+      
 
             app.UseAuthentication();
             app.UseAuthorization();

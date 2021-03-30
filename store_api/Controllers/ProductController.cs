@@ -8,6 +8,7 @@ using store_api.Models;
 using store_api.Dtos;
 using AutoMapper;
 using System.IO;
+using Microsoft.AspNetCore.Cors;
 
 namespace store_api.Controllers
 {
@@ -39,50 +40,37 @@ namespace store_api.Controllers
             }
             return NotFound();
         }
-
         [HttpPost]
-        public ActionResult<ProductCreateDto> CreateProduct([FromForm]ProductCreateDto productCreateDto)
+        public ActionResult<ProductCreateDto> CreateProduct(ProductCreateDto productCreateDto)
         {
-            Products product = new Products { name = productCreateDto.name , description= productCreateDto.description , status=productCreateDto.status };
-            byte[] imageData = null;
-            using (var binaryReader = new BinaryReader(productCreateDto.Image.OpenReadStream()))
-            {
-                imageData = binaryReader.ReadBytes((int)productCreateDto.Image.Length);
-            }
-            product.ImageData = imageData;
-
-            _repository.CreateProduct(product);
-            var commandModel = _mapper.Map<Products>(product);
-            _repository.CreateProduct(commandModel);
+           
+            var productModel = _mapper.Map<Products>(productCreateDto);
+            _repository.CreateProduct(productModel);
             _repository.SaveChanges();
 
-            var productReadDto = _mapper.Map<ProductReadDto>(commandModel);
+            var productReadDto = _mapper.Map<ProductReadDto>(productModel);
 
             return Ok(productReadDto);
         }
 
+        [EnableCors]
         [HttpPut("{id}")]
-        public ActionResult UpdateCommand(int id, [FromForm] ProductUpdateDto productUpdateDto)
+        public ActionResult UpdateCommand(int id,ProductUpdateDto productUpdateDto)
         {
-            Products product = new Products { name = productUpdateDto.name, description = productUpdateDto.description, status = productUpdateDto.status };
-            byte[] imageData = null;
-            using (var binaryReader = new BinaryReader(productUpdateDto.Image.OpenReadStream()))
-            {
-                imageData = binaryReader.ReadBytes((int)productUpdateDto.Image.Length);
-            }
-            product.ImageData = imageData;
+
             var productModelFromRepo = _repository.GetProductById(id);
             if (productModelFromRepo == null)
             {
                 return NotFound();
             }
-            _repository.UpdateProduct(id,product);
+            var productModel = _mapper.Map<Products>(productUpdateDto);
+            _repository.UpdateProduct(id, productModel);
 
             _repository.SaveChanges();
 
-            return NoContent();
+            return Ok();
         }
-
+        [EnableCors]
         [HttpDelete("{id}")]
         public ActionResult DeleteProduct(int id)
         {

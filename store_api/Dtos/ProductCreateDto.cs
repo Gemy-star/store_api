@@ -9,17 +9,12 @@ namespace store_api.Dtos
 {
     public class ProductCreateDto
     {
-        [Required]
         [MaxLength(250)]
         public string name { get; set; }
 
-        [Required]
-        public string description { get; set; }
-        [Required]
+       public string description { get; set; }
         public bool status { get; set; }
 
 
-        [Required]
-        public IFormFile Image { get; set; }
     }
 }

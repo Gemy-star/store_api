@@ -62,7 +62,6 @@ namespace store_api.Data
             var productFromDb =  _context.products.Find(id);
             productFromDb.name = pro.name;
             productFromDb.description = pro.description;
-            productFromDb.ImageData = pro.ImageData;
         }
     }
 }
