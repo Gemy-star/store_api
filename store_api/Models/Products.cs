@@ -16,7 +16,6 @@ namespace store_api.Models
 
         public string description { get; set; }
 
-        public byte[] ImageData { get; set; }
         public bool status { get; set; }
 
 
