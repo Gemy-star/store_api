@@ -59,12 +59,18 @@ namespace store_api.Controllers
                         claims: authClaims,
                         signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
                         );
+                var roles = await userManager.GetRolesAsync(user);
 
-                    return Ok(new
+                return Ok(new
                     {
                         token = new JwtSecurityTokenHandler().WriteToken(token),
-                        expiration = token.ValidTo
+                        user = user ,
+                        role = roles,
+                        expiration = token.ValidTo,
                     });
+                
+
+                   
                 }
                 return Unauthorized();
             }
