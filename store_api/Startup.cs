@@ -23,6 +23,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using store_api.Authentication;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 namespace store_api
 {
@@ -68,6 +70,7 @@ namespace store_api
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
                 };
             });
+            
             services.AddCors(options =>
             {
                 options.AddPolicy(allowSpecificOrigins,
@@ -94,16 +97,26 @@ namespace store_api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCors(options => options.WithOrigins("http://localhost:3000")
+           .AllowAnyMethod()
+           .AllowAnyHeader());
             if (env.IsDevelopment())
             { 
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "store_api v1"));
             }
-
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "Images")),
+                RequestPath = "/Images"
+            });
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseCors(options => options.WithOrigins("http://localhost:3000")
+            .AllowAnyMethod()
+            .AllowAnyHeader());
             app.UseCors(allowSpecificOrigins);
       
 

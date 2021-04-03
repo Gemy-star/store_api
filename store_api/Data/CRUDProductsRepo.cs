@@ -36,6 +36,7 @@ namespace store_api.Data
 
         public IEnumerable<Products> GetAllProducts()
         {
+
             return _context.products.ToList();
 
         }
